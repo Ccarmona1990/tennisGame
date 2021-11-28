@@ -1,0 +1,13 @@
+@import "./sass/resets";
+@import "./sass/variables";
+@import "./sass/header";
+@import "./sass/center";
+
+header {
+  background-color: $clr-primary-5;
+}
+
+//@include center();
+main {
+  height: 90vh;
+}

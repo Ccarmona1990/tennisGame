@@ -1,0 +1,59 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&family=Montserrat&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* colors */
+/* dark shades of primary color*/
+/* primary/main color */
+/* lighter shades of primary color */
+/* Other Primary colors*/
+/* grey */
+/* darkest grey - used for headings */
+/* grey used for paragraphs */
+/* rest of the colors */
+/* fonts  */
+/* rest of the vars */
+/* box shadow*/
+/*
+===============
+header
+===============
+*/
+header {
+  padding: 0 10vw;
+  height: 10vh;
+  display: grid;
+  align-items: center;
+}
+
+.nav-center {
+  display: flex;
+  justify-content: space-between;
+}
+
+.nav-center h1 {
+  color: white;
+}
+
+.nav-links {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 1rem;
+  list-style: none;
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+}
+
+.nav-links li a {
+  color: #0f172a;
+}
+
+header {
+  background-color: #49a6e9;
+}
+
+main {
+  height: 90vh;
+}/*# sourceMappingURL=style.css.map */
