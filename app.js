@@ -34,7 +34,7 @@ let machineSpeedLvl = 10;
 let player1Score = 0;
 let player2Score = 0;
 let winner;
-const WINNING_SCORE = 100;
+const WINNING_SCORE = 5;
 
 // stops the game
 let showingWinScreen = false;
