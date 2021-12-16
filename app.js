@@ -4,34 +4,37 @@ import {calcMousePos} from './Utils/mousePos.js';
 
 // variables
 const canvas = get('.cg');
+let canvasHeightLimit = 15;
+let canvasWidthLimit = 25;
 let ctx;
-let ballX = 5;
-let ballY = 50;  
-let ballSpeedX = 8;
-let ballSpeedY = 1;
-let framePerSec = 50;
+let ballX = 16;
+let ballY = 48; 
+let ballWidth = 10;
+let ballHeight = 0; 
+let ballSpeedX = 20;
+let ballSpeedY = 2;
+let framePerSec = 40;
+let ballColor = 'red';
 
-// canvas width and height
-canvas.style.minWidth = `500px`;
-canvas.style.minHeight = `300px`;
-//canvas.style.width = `100%`;
-//canvas.style.height = `100%`;
+// Size
+canvas.width = window.innerWidth;
+canvas.height = 500;
+
 
 // paddles
 let paddle1Y = 50;
 let paddle2Y = 50;
-const PADDLE_HEIGHT = 50;
-const PADDLE_WIDTH = 6;
-const PADDLE1_POSITION = 5;
-const PADDLE2_POSITION = 5;
-const PADDLE1_POSITION_BALL = PADDLE1_POSITION + 10;
-const PADDLE2_POSITION_BALL = PADDLE2_POSITION + 10;
+const PADDLE_HEIGHT = 100;
+const PADDLE_WIDTH = 10;
+const PADDLE1_POSITION = 0;
+const PADDLE2_POSITION = 1;
+let machineSpeedLvl = 10;
 
 // scores
 let player1Score = 0;
 let player2Score = 0;
 let winner;
-const WINNING_SCORE = 5;
+const WINNING_SCORE = 100;
 
 // stops the game
 let showingWinScreen = false;
@@ -41,18 +44,28 @@ window.addEventListener('DOMContentLoaded', ()=>{
 ctx = canvas.getContext('2d');
 
 // Game visuals
-setInterval(()=> {drawBackGround(); Ball(); players(); pcMovement(); scores(); drawNet();},framePerSec);
+setInterval(()=> {
+    drawBackGround();
+    drawBall();
+    ballCollition(); 
+    players(); 
+    pcMovement(); 
+    scores(); 
+    drawNet();
+},framePerSec);
 
 // click event to restart the game
 canvas.addEventListener('click', gameRestart);
+
+// click event to restart the ball
+// canvas.addEventListener('click', ballRestart);
 
 // mouse movement functionality
 canvas.addEventListener('mousemove', function (event) {
     const mousePos = calcMousePos(canvas,event);
     // adds the position of the mouse to the paddle
-    // mousePos.y MUST be divided by 2, otherwise the mouse/paddle coordination fails
     // (PADDLE_HEIGHT/2) centers the mouse to the paddle 
-    paddle1Y = mousePos.y/2 - (PADDLE_HEIGHT/2) ;
+    paddle1Y = mousePos.y - (PADDLE_HEIGHT/2) ;
 })
 })
 
@@ -90,15 +103,16 @@ function ballReset (){
     ballSpeedX = -ballSpeedX;
     ballX = canvas.width/2;
     ballY = canvas.height/2;
+
 }
 
 // creates automatic movement for the paddle2
 function pcMovement (){
     const paddle2YCenter = paddle2Y + (PADDLE_HEIGHT/2);
     if (paddle2YCenter < ballY -20){
-        paddle2Y += 2;
+        paddle2Y += machineSpeedLvl;
     } else if (paddle2YCenter > ballY +20){
-        paddle2Y -= 2;
+        paddle2Y -= machineSpeedLvl;
     }
 }
 
@@ -110,26 +124,42 @@ function drawBackGround (){
 
 // shows the scores on the screen
 function scores(){
-    ctx.fillText(player1Score,10,10); // player1
-    ctx.fillText(player2Score,canvas.width-15,10); // player2
+    const p1ScoreWidth = 20;
+    const p2ScoreWidth = canvas.width-40;
+    const psScoreHeight = 20;
+
+    ctx.font = '20px Arial';
+    ctx.fillText(player1Score,p1ScoreWidth,psScoreHeight); // player1
+    ctx.fillText(player2Score,p2ScoreWidth,psScoreHeight); // player2
+}
+
+function drawBall(){
+    if (showingWinScreen) return;
+    // ball shape
+    colorCircle(ctx,ballX, ballY, ballWidth, ballHeight,Math.PI*2, true, ballColor);
 }
 
 // players paddles
 function players (){
     if (showingWinScreen) {
+        const winningMessage = `Congratulations ${winner}!!`;
+        const resetMessage = `Click to play again`;
+
         ctx.fillStyle = "white";
-        ctx.fillText(`Congratulations ${winner} You've won the game`,45,canvas.height/2)
-        ctx.fillText(`Click to play again`,105,canvas.height/2+15)
+        ctx.font = "20px Arial"
+        ctx.fillText(winningMessage,canvas.width/2.6,canvas.height/3)
+        ctx.fillText(resetMessage,canvas.width/2.5,canvas.height/2)
         return;}
 
     // player1 tennis raquet
     colorRect(ctx,PADDLE1_POSITION,paddle1Y,PADDLE_WIDTH,PADDLE_HEIGHT, 'lightblue');
     // machine tennis raquet
-    colorRect(ctx,canvas.width-(PADDLE_WIDTH+PADDLE2_POSITION),paddle2Y,PADDLE_WIDTH,50, 'lightblue');
+    colorRect(ctx,canvas.width-(PADDLE_WIDTH+PADDLE2_POSITION),paddle2Y,PADDLE_WIDTH,PADDLE_HEIGHT, 'lightblue');
 }
 
+
 // ball functionality
-function Ball (){
+function ballCollition (){
     // shuts down the screen
     if (showingWinScreen) return;
 
@@ -137,12 +167,14 @@ function Ball (){
     ballX += ballSpeedX;
     // gives the ball movement vertically
     ballY += ballSpeedY;
-    
-    // All the IFs, check when the ball reaches the end of the canvas
-    if (ballX < (PADDLE_WIDTH+PADDLE1_POSITION_BALL)){
-        if (ballY > paddle1Y && ballY < paddle1Y+PADDLE_HEIGHT){
-            // bounces the ball back when hits the paddle
 
+
+    // All the IFs, check when the ball reaches the end of the canvas
+    if (ballX < (canvasWidthLimit + PADDLE_WIDTH) ){
+        
+        if (ballY > paddle1Y && ballY < paddle1Y+PADDLE_HEIGHT){
+
+            // bounces the ball back when hits the paddle
             ballSpeedX = -ballSpeedX;
 
             // bounces the ball back with a different speed and direction
@@ -152,8 +184,10 @@ function Ball (){
             player2Score ++; // must be BEFORE ballReset
             ballReset();
         }
+        
     }
-    if (ballX > (canvas.width - (PADDLE_WIDTH+PADDLE2_POSITION_BALL))){
+    if (ballX > (canvas.width - 20)){
+
         if (ballY > paddle2Y && ballY < paddle2Y+PADDLE_HEIGHT){
             // bounces the ball back when hits the paddle
             ballSpeedX = -ballSpeedX;
@@ -161,22 +195,21 @@ function Ball (){
             // bounces the ball back with a different speed and direction
             let deltaY = ballY - (paddle2Y+PADDLE_HEIGHT/2);
             ballSpeedY = deltaY * 0.35;
-        }else if (ballX > canvas.width ) {
+        }
+        else if (ballX > canvas.width ) {
             player1Score++; // must be BEFORE ballReset
+            machineSpeedLvl++;// must be BEFORE ballReset
             ballReset();
         }
     } 
-    if (ballY <= 5){
+    if (ballY <= canvasHeightLimit){
         // bounces the ball from the top
         ballSpeedY = -ballSpeedY;
     }
-    if (ballY > (canvas.height-5)){
+    if (ballY > (canvas.height-canvasHeightLimit)){
         // bounces the ball from the bottom
         ballSpeedY = -ballSpeedY;
     } 
-
-    // ball shape
-    colorCircle(ctx,ballX, ballY, 5, 0,Math.PI*2, true, 'red');
 
 }
 
